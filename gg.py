@@ -5,7 +5,10 @@ import sys, os
 import re
 import subprocess
 
-GIT="/usr/local/bin/git"
+import threading
+import time
+
+THREADS=10
 
 commom_files = [
 	# Repository specific configuration file.
@@ -14,15 +17,15 @@ commom_files = [
 	"index",
 
 	# Hooks are customization scripts used by various Git commands.
-	"hooks/pre-commit.sample",
-	"hooks/pre-applypatch.sample",
-	"hooks/post-update.sample",
-	"hooks/update.sample",
-	"hooks/prepare-commit-msg.sample",
-	"hooks/pre-push.sample",
-	"hooks/applypatch-msg.sample",
-	"hooks/pre-rebase.sample",
-	"hooks/commit-msg.sample",
+	#"hooks/pre-commit.sample",
+	#"hooks/pre-applypatch.sample",
+	#"hooks/post-update.sample",
+	#"hooks/update.sample",
+	#"hooks/prepare-commit-msg.sample",
+	#"hooks/pre-push.sample",
+	#"hooks/applypatch-msg.sample",
+	#"hooks/pre-rebase.sample",
+	#"hooks/commit-msg.sample",
 
 	# References are stored in subdirectories of this directory
 	"refs/heads/master",
@@ -45,7 +48,6 @@ commom_files = [
 	"objects/info/http-alternates"
 ];
 
-blacklist = []
 
 def mkdir_recursive(path):
 	sub_path = "/" if path[0] == "/" else ""
@@ -67,7 +69,7 @@ def get_file_lines(filename):
 
 	return lines
 
-def parse_file_hashes(filename):
+def parse_file_hashes_old(filename):
 	lines = get_file_lines(filename)
 
 	result = []
@@ -76,44 +78,51 @@ def parse_file_hashes(filename):
 
 	return result
 
-def save_file(remote):
+
+def parse_file_hashes(filename):
+	lines = get_file_lines(filename)
+	return [hash_value for line in lines for hash_value in extract_hashes(line)]
+
+
+def wait_threads():
+	while threading.active_count() >= THREADS:
+		time.sleep(0.5)
+
+
+def save_file_thread(remote):
 	local  = '/'.join(remote.split('/')[2:])
 	path   = '/'.join(local.split('/')[:-1])
-
-	if os.path.isfile(local) or remote in blacklist:
+	
+	if os.path.isfile(local):
 		return
-
+	
 	mkdir_recursive(path)
 	
 	try: # ignore 404
 		urlobj.retrieve(remote, local)
-		#print "-> %s" % (remote)
-		return True
 	except:
 		return False
 
+	return True
+
+def save_file(remote):
+	while threading.active_count() >= THREADS:
+		time.sleep(0.5)
+	
+	threading.Thread(target=save_file_thread, args=(remote,)).start()
+
 def get_object(remote_path, object_hash):
 
-	if object_hash in blacklist:
-		return
-	
 	# Loose
 	folder = objhash[:2]
 	filename = objhash[2:]
 	remote = "%s/objects/%s/%s" % (remote_path, folder, filename)
-	if save_file (remote) :
-		return True
-
-	# Blacklist the hash
-	blacklist.append(object_hash)
+	return True if save_file (remote) else False
+		
 
 def get_pack(remote_path, object_pack_hash):
-	if object_pack_hash in blacklist:
-		return
-
 	remote = "%s/objects/pack/pack-%s.pack" % (remote_path, object_pack_hash)
-	if save_file (remote) :
-		return True
+	return True if save_file (remote) else False
 
 
 if __name__ == "__main__":
@@ -121,28 +130,33 @@ if __name__ == "__main__":
 		print "Use %s <http://site/path/to/.git>" % (sys.argv[0])
 		sys.exit(-1)
 
+	urlobj = urllib.URLopener()
 
 	git_path_remote = sys.argv[1] if sys.argv[1][-1] <> '/' else sys.argv[1][:-1]
 	git_path_local = '/'.join(git_path_remote.split('/')[2:])
-
-	print "Remote: %s / Local: %s" % (git_path_remote, git_path_local)
-
 	host = git_path_remote.split('/')[2]
 
-	urlobj = urllib.URLopener()
+	print "[i] Remote: %s" % (git_path_remote)
+	print "[i] Local: %s" % (git_path_local)
+	print "[i] Host: %s" % (host)
+	print "\n"
 
+	qt_commom_files = len(commom_files)
+	count = 1
+	print "\n[+] Retrieving %s commom files..." % (qt_commom_files)
 
-	print "Host: %s" % (host)
-	print "\n[+] Retrieving commom files..."
 	for commom_file in commom_files:
+		print "[%d/%d] %s" % (count, qt_commom_files, commom_file)
+		count = count + 1
+
 		remote = "%s/%s" % (git_path_remote, commom_file)
 		save_file(remote)
 	
+	wait_threads()
 
 	obj_content_list = []
 	for object_file in ['logs/HEAD', 'logs/refs/heads/master', 'logs/refs/remotes/origin/master']:
 		log_head_file = "%s/%s" % (git_path_local, object_file)
-		print "[+] Retrieving objects files (File: %s)..." % (log_head_file)
 
 		if not os.path.exists(log_head_file):
 			print "[-] Cannot retrieve objects file %s. There's not HEAD file." % object_file
@@ -150,6 +164,7 @@ if __name__ == "__main__":
 
 		obj_content_list += parse_file_hashes(log_head_file)
 
+	wait_threads()
 
 	# unique
 	obj_content_list = set(obj_content_list)
@@ -163,10 +178,11 @@ if __name__ == "__main__":
 		count = count+1
 		get_object(git_path_remote, objhash)
 		
+	wait_threads()
 
 	try:
 		git_fsck_result = subprocess.check_output(
-			[GIT, '--git-dir=%s' % (git_path_local), 'fsck', '--full'],
+			['git', '--git-dir=%s' % (git_path_local), 'fsck', '--full'],
 			shell=False,
 			stderr=subprocess.STDOUT
 		)
@@ -185,6 +201,7 @@ if __name__ == "__main__":
 
 		get_object(git_path_remote, objhash)
 
+	#wait_threads()
 
 	pack_hashes = parse_file_hashes("%s/objects/info/packs" % (git_path_local))
 	qt_packs = len(pack_hashes)
@@ -209,7 +226,7 @@ if __name__ == "__main__":
 
 		try:
 			print subprocess.check_output(
-				[GIT, '--git-dir=%s' % (git_path_local), 'unpack-objects', '-q'],
+				['git', '--git-dir=%s' % (git_path_local), 'unpack-objects', '-q'],
 				shell=False,
 				stderr=subprocess.STDOUT,
 				stdin=open("%s/objects/pack/%s" % (git_path_local, pack_file))

@@ -99,12 +99,9 @@ def parse_file_hashes(filename):
 
 
 def wait_threads():
-	while threading.active_count() >= THREADS:
-		time.sleep(0.5)
-
-def wait_all_threads():
-	while threading.active_count() > 0:
-		time.sleep(0.5)
+	while threading.active_count() > 1:
+		print threading.active_count()
+		time.sleep(1)
 
 
 def save_file_thread(remote):
@@ -258,10 +255,10 @@ if __name__ == "__main__":
 				stdin=open("%s/objects/pack/%s" % (git_path_local, pack_file))
 			)
 		except Exception, e:
-			print str(e)
+			pass
 
 	print "\nFinishing..\n"
-	wait_all_threads()
+	wait_threads()
 
 	print "Good bye!\n"
 	sys.exit(0)

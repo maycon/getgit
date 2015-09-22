@@ -102,6 +102,10 @@ def wait_threads():
 	while threading.active_count() >= THREADS:
 		time.sleep(0.5)
 
+def wait_all_threads():
+	while threading.active_count() > 0:
+		time.sleep(0.5)
+
 
 def save_file_thread(remote):
 	local  = '/'.join(remote.split('/')[2:])
@@ -257,7 +261,7 @@ if __name__ == "__main__":
 			print str(e)
 
 	print "\nFinishing..\n"
-	wait_threads()
+	wait_all_threads()
 
 	print "Good bye!\n"
 	sys.exit(0)

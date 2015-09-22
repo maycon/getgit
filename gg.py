@@ -48,6 +48,15 @@ commom_files = [
 	"objects/info/http-alternates"
 ];
 
+################################# Handle CTRL+C ##########################
+import signal
+
+def signal_handler(signal, frame):
+        print('You pressed Ctrl+C!')
+        sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+##########################################################################
 
 def mkdir_recursive(path):
 	sub_path = "/" if path[0] == "/" else ""
@@ -63,11 +72,16 @@ def extract_hashes(buffer):
 	return []
 
 def get_file_lines(filename):
-	fd = open(filename)
-	lines = fd.readlines()
-	fd.close
+	try:
+		fd = open(filename)
+		lines = fd.readlines()
+		fd.close
 
-	return lines
+		return lines
+	except:
+		pass
+
+	return []
 
 def parse_file_hashes_old(filename):
 	lines = get_file_lines(filename)
@@ -95,8 +109,10 @@ def save_file_thread(remote):
 	
 	if os.path.isfile(local):
 		return
-	
-	mkdir_recursive(path)
+	try:
+		mkdir_recursive(path)
+	except:
+		pass
 	
 	try: # ignore 404
 		urlobj.retrieve(remote, local)
@@ -172,7 +188,7 @@ if __name__ == "__main__":
 
 	# Save each object file
 	count = 1
-	print "\n[+] Saving existing objects files..."
+	print "\n[+] Saving %d existing objects files..." % (qt_objs)
 	for objhash in obj_content_list:
 		print "[%d/%d] %s" % (count, qt_objs, objhash)
 		count = count+1
@@ -194,14 +210,14 @@ if __name__ == "__main__":
 	qt_objs = len(obj_content_list)
 
 	count = 1
-	print "[+] Saving %d objects" % (qt_objs)
+	print "\n[+] Saving %d recoveried objects files..." % (qt_objs)
 	for objhash in obj_content_list:
 		print "[%d/%d] %s" % (count, qt_objs, objhash)
 		count = count+1
 
 		get_object(git_path_remote, objhash)
 
-	#wait_threads()
+	wait_threads()
 
 	pack_hashes = parse_file_hashes("%s/objects/info/packs" % (git_path_local))
 	qt_packs = len(pack_hashes)
@@ -215,8 +231,14 @@ if __name__ == "__main__":
 		get_pack(git_path_remote, pack_hash)
 
 
-	pack_files = [ f for f in os.listdir("%s/objects/pack/" % (git_path_local)) ]
-	qt_packs = len(pack_files)
+	wait_threads()
+
+	pack_files = []
+	try:
+		pack_files = [ f for f in os.listdir("%s/objects/pack/" % (git_path_local)) ]
+		qt_packs = len(pack_files)
+	except:
+		pass
 
 	count = 1
 	print "\n[+] Unpacking %s pack files ..." % (qt_packs)
@@ -234,4 +256,10 @@ if __name__ == "__main__":
 		except Exception, e:
 			print str(e)
 
-	print "\nFinished!\n"
+	print "\nFinishing..\n"
+	wait_threads()
+
+	print "Good bye!\n"
+	sys.exit(0)
+	
+

@@ -136,7 +136,7 @@ if __name__ == "__main__":
 	print "\n[+] Retrieving commom files..."
 	for commom_file in commom_files:
 		remote = "%s/%s" % (git_path_remote, commom_file)
-		#save_file(remote)
+		save_file(remote)
 	
 
 	obj_content_list = []
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 	for objhash in obj_content_list:
 		print "[%d/%d] %s" % (count, qt_objs, objhash)
 		count = count+1
-		#get_object(git_path_remote, objhash)
+		get_object(git_path_remote, objhash)
 		
 
 	try:
@@ -183,7 +183,7 @@ if __name__ == "__main__":
 		print "[%d/%d] %s" % (count, qt_objs, objhash)
 		count = count+1
 
-		#get_object(git_path_remote, objhash)
+		get_object(git_path_remote, objhash)
 
 
 	pack_hashes = parse_file_hashes("%s/objects/info/packs" % (git_path_local))

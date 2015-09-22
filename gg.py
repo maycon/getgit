@@ -198,29 +198,6 @@ if __name__ == "__main__":
 		
 	wait_threads()
 
-	try:
-		git_fsck_result = subprocess.check_output(
-			['git', '--git-dir=%s' % (git_path_local), 'fsck', '--full'],
-			shell=False,
-			stderr=subprocess.STDOUT
-		)
-	except Exception, e:
-		git_fsck_result = str(e.output)
-
-
-	obj_content_list = extract_hashes(git_fsck_result)
-	qt_objs = len(obj_content_list)
-
-	count = 1
-	print "\n[+] Saving %d recoveried objects files..." % (qt_objs)
-	for objhash in obj_content_list:
-		print "[%d/%d] %s" % (count, qt_objs, objhash)
-		count = count+1
-
-		get_object(git_path_remote, objhash)
-
-	wait_threads()
-
 	pack_hashes = parse_file_hashes("%s/objects/info/packs" % (git_path_local))
 	qt_packs = len(pack_hashes)
 
@@ -258,10 +235,47 @@ if __name__ == "__main__":
 		except Exception, e:
 			pass
 
-	print "\nFinishing..\n"
 	wait_threads()
 
-	print "Good bye!\n"
+	blacklist = []
+	tries = 0
+	while True:
+		try:
+			git_fsck_result = subprocess.check_output(
+				['git', '--git-dir=%s' % (git_path_local), 'fsck', '--full'],
+				shell=False,
+				stderr=subprocess.STDOUT
+			)
+		except Exception, e:
+			git_fsck_result = str(e.output) if hasattr(e, 'output') else ''
+
+		obj_content_list = extract_hashes(git_fsck_result)
+		new_obj_hashes = [h for h in obj_content_list if not h in blacklist]
+		qt_objs = len(obj_content_list)
+		qt_new = len(new_obj_hashes)
+
+		print "\n[+] git-fsck returns %d objects files (%s new)." % (qt_objs, qt_new)
+
+		if qt_new = 0:
+			break
+
+		count = 1
+		print "\n[+] Saving %d recoveried objects files..." % (qt_new)
+		for objhash in new_obj_hashes:
+			print "[%d/%d] %s" % (count, qt_objs, objhash)
+			count = count+1
+
+			if not get_object(git_path_remote, objhash):
+				blacklist.append(objhash)
+
+		wait_threads()
+
+
+	print "\n[+] Finishing..\n"
+
+	wait_threads()
+
+	print "[*] Good bye!\n"
 	sys.exit(0)
 	
 

@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
 		print "\n[+] git-fsck returns %d objects files (%s new)." % (qt_objs, qt_new)
 
-		if qt_new = 0:
+		if qt_new == 0:
 			break
 
 		count = 1

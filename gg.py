@@ -100,8 +100,7 @@ def parse_file_hashes(filename):
 
 def wait_threads():
 	while threading.active_count() > 1:
-		print threading.active_count()
-		time.sleep(1)
+		time.sleep(0.5)
 
 
 def save_file_thread(remote):
@@ -126,7 +125,9 @@ def save_file(remote):
 	while threading.active_count() >= THREADS:
 		time.sleep(0.5)
 	
-	threading.Thread(target=save_file_thread, args=(remote,)).start()
+	th = threading.Thread(target=save_file_thread, args=(remote,))
+	th.daemon = True
+	th.start()
 
 def get_object(remote_path, object_hash):
 

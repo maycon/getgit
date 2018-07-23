@@ -17,15 +17,15 @@ commom_files = [
 	"index",
 
 	# Hooks are customization scripts used by various Git commands.
-	#"hooks/pre-commit.sample",
-	#"hooks/pre-applypatch.sample",
-	#"hooks/post-update.sample",
-	#"hooks/update.sample",
-	#"hooks/prepare-commit-msg.sample",
-	#"hooks/pre-push.sample",
-	#"hooks/applypatch-msg.sample",
-	#"hooks/pre-rebase.sample",
-	#"hooks/commit-msg.sample",
+	"hooks/pre-commit.sample",
+	"hooks/pre-applypatch.sample",
+	"hooks/post-update.sample",
+	"hooks/update.sample",
+	"hooks/prepare-commit-msg.sample",
+	"hooks/pre-push.sample",
+	"hooks/applypatch-msg.sample",
+	"hooks/pre-rebase.sample",
+	"hooks/commit-msg.sample",
 
 	# References are stored in subdirectories of this directory
 	"refs/heads/master",
@@ -121,6 +121,10 @@ def save_file_thread(remote):
 
 	return True
 
+def exist_url(url):
+	http_code = urllib.urlopen(url).getcode()
+	return http_code != 404
+
 def save_file(remote):
 	while threading.active_count() >= THREADS:
 		time.sleep(0.5)
@@ -147,6 +151,10 @@ if __name__ == "__main__":
 	if len(sys.argv) <> 2:
 		print "Use %s <http://site/path/to/.git>" % (sys.argv[0])
 		sys.exit(-1)
+
+	if not exist_url(sys.argv[1]):
+		print "The URL you provided does not exist (http 404)!"
+		sys.exit(-2)
 
 	urlobj = urllib.URLopener()
 
